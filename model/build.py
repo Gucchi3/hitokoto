@@ -31,7 +31,7 @@ def build_model(name: str, checkpoint: str | None) -> nn.Module:
     #* Make the model for the name, and load the weights when a checkpoint is given.
     #? Called from utils/trainer/pipeline.py for the student and the teacher.
     #! With a null checkpoint, the model starts from the default layer initialization.
-    #! Weights whose names do not match (such as a head changed from MLM to classification) are skipped and listed. A layer with the same name and another shape stops with an error, so give a changed layer a new name.
+    #! Weights whose names do not match (such as a head changed for another task) are skipped and listed. A layer with the same name and another shape stops with an error, so give a changed layer a new name.
     '''
     
     # Make the model
