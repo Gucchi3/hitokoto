@@ -6,7 +6,7 @@
         "log_dir": "log"
     },
     "data": {
-        "name"                 : "hotaru",
+        "name"                 : "pretrain",
         "root"                 : "data",
         "batch_size"           : 64,
         "num_workers"          : 8,

@@ -15,13 +15,15 @@ from collections.abc import Callable
 from types           import SimpleNamespace
 
 from utils.exceptions import Error
-from .hotaru          import build_hotaru_bundle
+from .pretrain        import build_pretrain_bundle
+from .sft             import build_sft_bundle
 from .types           import DataBundle
 
 DatasetBuilder = Callable[[SimpleNamespace, int], DataBundle]
 
 DATASET_REGISTRY: dict[str, DatasetBuilder] = {
-    "hotaru": build_hotaru_bundle,
+    "pretrain": build_pretrain_bundle,
+    "sft"     : build_sft_bundle,
 }
 
 
