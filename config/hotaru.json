@@ -1,0 +1,48 @@
+{
+    "run": {
+        "mode"   : "train",
+        "seed"   : 0,
+        "device" : "auto",
+        "log_dir": "log"
+    },
+    "data": {
+        "name"                 : "hotaru",
+        "root"                 : "data",
+        "batch_size"           : 64,
+        "num_workers"          : 8,
+        "max_length"           : 256,
+        "tokenizer_dir"        : "model/weight/hotaru",
+        "teacher_tokenizer_dir": null
+    },
+    "model": {
+        "name"              : "hotaru",
+        "checkpoint"        : null,
+        "teacher_name"      : "hotaru",
+        "teacher_checkpoint": null
+    },
+    "train": {
+        "method"            : "normal",
+        "epochs"            : 1,
+        "accumulation_steps": 1,
+        "max_grad_norm"     : 1.0,
+        "cuda_graph"        : true,
+        "log_interval"      : 20,
+        "loss": {
+            "name": "cross_entropy"
+        },
+        "optimizer": {
+            "name"         : "adamw",
+            "learning_rate": 0.0005,
+            "weight_decay" : 0.01
+        },
+        "scheduler": {
+            "name"                 : "cosine_annealing",
+            "warmup_steps"         : 500,
+            "minimum_learning_rate": 0.00001
+        },
+        "distillation": {
+            "temperature": 2.0,
+            "alpha"      : 0.5
+        }
+    }
+}

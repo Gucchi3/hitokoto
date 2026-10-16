@@ -1,0 +1,123 @@
+/* The styles of KaTeX for the math (the same version as rehype-katex uses) */
+@import 'katex/dist/katex.min.css';
+
+/*
+ * The colors come from the leaf of the logo (kotonoha, the leaves of words):
+ * a leaf green for things you can press (links and buttons), a soft moss for lines and table heads,
+ * and the warm gray of the logo letters for the text, on raw paper.
+ */
+:root {
+  /* Leaf green: links and buttons (darker than the logo leaf, so that it reads on the paper) */
+  --ifm-color-primary: #3e7a4a;
+  --ifm-color-primary-dark: #386e43;
+  --ifm-color-primary-darker: #35683f;
+  --ifm-color-primary-darkest: #2b5534;
+  --ifm-color-primary-light: #448650;
+  --ifm-color-primary-lighter: #478b53;
+  --ifm-color-primary-lightest: #529d5f;
+
+  /* Raw paper and the warm gray of the logo letters */
+  --ifm-background-color: #fbfaf5;
+  --ifm-background-surface-color: #fbfaf5;
+  --ifm-font-color-base: #3d3833;
+  --ifm-font-color-secondary: #6b645c;
+  --ifm-heading-color: #4a4540;
+
+  /* Moss: the lines and the table heads */
+  --hitokoto-line: #d5e3d3;
+  --ifm-toc-border-color: var(--hitokoto-line);
+  --ifm-hr-border-color: var(--hitokoto-line);
+  --ifm-table-border-color: var(--hitokoto-line);
+  --ifm-table-head-background: #edf4ec;
+  --ifm-table-stripe-background: #f4f8f1;
+  --ifm-code-background: #edf4ec;
+  --hitokoto-code-block: #f4f8f1;
+
+  /* Type: the system font, with rounded corners like the leaf */
+  --ifm-heading-font-weight: 600;
+  --ifm-code-font-size: 95%;
+  --ifm-global-radius: 8px;
+  --ifm-navbar-shadow: none;
+  --docusaurus-highlighted-code-line-bg: rgba(62, 122, 74, 0.1);
+}
+
+[data-theme='dark'] {
+  /* The leaf of the dark logo */
+  --ifm-color-primary: #8fc29a;
+  --ifm-color-primary-dark: #78b585;
+  --ifm-color-primary-darker: #6dae7b;
+  --ifm-color-primary-darkest: #4f9560;
+  --ifm-color-primary-light: #a6cfaf;
+  --ifm-color-primary-lighter: #b1d5b8;
+  --ifm-color-primary-lightest: #d0e6d4;
+
+  /* The background of the dark logo, and pale leaf letters */
+  --ifm-background-color: #0d1117;
+  --ifm-background-surface-color: #131a21;
+  --ifm-font-color-base: #e3ebe3;
+  --ifm-font-color-secondary: #a9b8aa;
+  --ifm-heading-color: #eef6ee;
+
+  --hitokoto-line: #26342a;
+  --ifm-table-head-background: #16211a;
+  --ifm-table-stripe-background: #111a14;
+  --ifm-code-background: #16211a;
+  --hitokoto-code-block: #131c16;
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* The navbar sits on the paper, with one moss line under it */
+.navbar {
+  border-bottom: 1px solid var(--hitokoto-line);
+}
+
+/* The logo in the navbar */
+.navbar__logo {
+  height: 2.2rem;
+}
+
+/* The second button is drawn in the text color: an outline, filled on hover */
+.button--secondary.button--outline {
+  --ifm-button-border-color: var(--ifm-heading-color);
+}
+
+/* Code blocks on soft green paper instead of the gray of the code theme */
+.theme-code-block {
+  --prism-background-color: var(--hitokoto-code-block) !important;
+}
+
+.theme-code-block pre.prism-code {
+  background-color: var(--hitokoto-code-block) !important;
+}
+
+/* The footer is a block of deep green */
+.footer--dark {
+  --ifm-footer-background-color: #23302a;
+  --ifm-footer-color: #e3ebe3;
+  --ifm-footer-link-color: #e3ebe3;
+  --ifm-footer-link-hover-color: #b1d5b8;
+  --ifm-footer-title-color: #fbfaf5;
+}
+
+[data-theme='dark'] .footer--dark {
+  --ifm-footer-background-color: #080b0f;
+}
+
+/* The "Coming soon" label */
+.coming-soon {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 999px;
+  color: var(--ifm-color-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Long math scrolls inside itself on a narrow screen */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}

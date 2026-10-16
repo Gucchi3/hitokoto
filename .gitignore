@@ -1,0 +1,32 @@
+# Keep everything private, and publish only the files listed below
+/*
+!/.gitignore
+!/README.md
+!/main.py
+!/pyproject.toml
+!/model/
+!/tool/
+!/utils/
+!/docs/
+!/website/
+!/.github/
+!/config/
+
+# docs: only the images (the specs, the coding rules, and the reading list stay on this machine)
+/docs/*
+!/docs/img/
+
+# model: the code and the tokenizers in model/weight/<model name>/, but not the weights
+/model/weight/**/*.pth
+/model/weight/**/*.pt
+/model/weight/**/*.safetensors
+/model/weight/**/.cache/
+
+# website: not the packages, the build, and the cache of Docusaurus
+/website/node_modules/
+/website/build/
+/website/.docusaurus/
+
+# Python caches anywhere
+__pycache__/
+*.py[cod]

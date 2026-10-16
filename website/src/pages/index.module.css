@@ -1,0 +1,41 @@
+/* The logo, the tagline, and the two buttons, with wide empty space around them */
+.hero {
+  padding: 5rem 0 3.5rem;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+}
+
+/* The leaf of the logo grows in, so it gets the room */
+.logo {
+  width: min(440px, 85vw);
+  height: auto;
+}
+
+.tagline {
+  max-width: 34rem;
+  margin: 1.75rem auto 1rem;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--ifm-heading-color);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* The points under the hero, after one moss line */
+.features {
+  padding: 2.5rem 0 4rem;
+  border-top: 1px solid var(--hitokoto-line);
+}
+
+.featureTitle {
+  font-size: 1.3rem;
+}
