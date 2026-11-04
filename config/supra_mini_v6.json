@@ -25,9 +25,9 @@
     },
     "train": {
         "method"            : "normal",
-        "steps"             : 18000,
+        "steps"             : 19054,
         "eval_interval"     : 1000,
-        "accumulation_steps": 1,
+        "accumulation_steps": 8,
         "max_grad_norm"     : 1.0,
         "cuda_graph"        : true,
         "log_interval"      : 20,
