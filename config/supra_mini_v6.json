@@ -25,25 +25,34 @@
     },
     "train": {
         "method"            : "normal",
-        "steps"             : 18000,
+        "steps"             : 19054,
         "eval_interval"     : 1000,
-        "accumulation_steps": 1,
+        "accumulation_steps": 8,
         "max_grad_norm"     : 1.0,
         "cuda_graph"        : true,
         "log_interval"      : 20,
         "resume"            : null,
         "loss": {
-            "name": "cross_entropy"
+            "name"    : "cross_entropy_z_loss",
+            "z_weight": 0.0001
         },
         "optimizer": {
-            "name"         : "adamw",
-            "learning_rate": 0.0006,
-            "weight_decay" : 0.1
+            "name"                      : "normuon",
+            "learning_rate"             : 0.0006,
+            "weight_decay"              : 0.01,
+            "betas"                     : [0.9, 0.95],
+            "embedding_lr_scale"        : 0.3,
+            "muon_learning_rate"        : 0.02,
+            "muon_momentum"             : 0.95,
+            "muon_momentum_start"       : 0.85,
+            "muon_momentum_warmup_steps": 300,
+            "normuon_beta2"             : 0.95
         },
         "scheduler": {
-            "name"                 : "cosine_annealing",
+            "name"                 : "wsd",
             "warmup_steps"         : 500,
-            "minimum_learning_rate": 0.00001
+            "decay_fraction"       : 0.2,
+            "minimum_learning_rate": 0.0
         },
         "distillation": {
             "temperature": 2.0,
