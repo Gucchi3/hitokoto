@@ -1,15 +1,17 @@
 # @file types.py
 # @brief Data types
-# @author Kohei Yamaguchi, Claude
 
 from dataclasses      import dataclass
 from math             import prod
 from torch.utils.data import DataLoader
 from typing           import Any
 
+from .epoch_sampler import EpochSampler
+
 '''
 DataBundle
 ├── train_loader
+├── train_sampler: EpochSampler
 ├── validation_loader
 ├── test_loader
 └── metadata: DatasetMetadata
@@ -67,10 +69,12 @@ class DatasetMetadata:
 @dataclass(frozen=True)
 class DataBundle:
     '''
-    #* Group the train, validation, and test loaders with the metadata.
+    #* Group the train, validation, and test loaders with the sampler of the train loader and the metadata.
+    #! The trainer moves train_sampler to the place where the training is, such as the place of a resumed run.
     '''
     
     train_loader     : DataLoader[Any]
+    train_sampler    : EpochSampler
     validation_loader: DataLoader[Any]
     test_loader      : DataLoader[Any]
     metadata         : DatasetMetadata

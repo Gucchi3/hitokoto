@@ -1,6 +1,5 @@
 # @file loss.py
 # @brief Build a loss function, and compute the label loss and the distillation loss
-# @author Kohei Yamaguchi, Claude
 
 ##########################################################
 '''

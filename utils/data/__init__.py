@@ -1,8 +1,9 @@
-from .bin2dataset import Bin2dataset
-from .bundle      import build_data_bundle
-from .pretrain    import build_pretrain_bundle
-from .sft         import build_sft_bundle
-from .types       import DataBundle, DatasetMetadata, PreprocessingMetadata
+from .bin2dataset   import Bin2dataset
+from .bundle        import build_data_bundle
+from .epoch_sampler import EpochSampler
+from .pretrain      import build_pretrain_bundle
+from .sft           import build_sft_bundle
+from .types         import DataBundle, DatasetMetadata, PreprocessingMetadata
 
 '''
 data/
@@ -12,6 +13,8 @@ data/
 ├── bundle.py
 │   ├── DatasetBuilder
 │   └── build_data_bundle()
+├── epoch_sampler.py
+│   └── EpochSampler
 ├── pretrain.py
 │   └── build_pretrain_bundle()
 ├── sft.py

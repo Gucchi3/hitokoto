@@ -1,6 +1,5 @@
 # @file exceptions.py
 # @brief Error class with error details
-# @author Kohei Yamaguchi, Claude
 
 from rich.console import Console
 from rich.text    import Text
@@ -10,7 +9,7 @@ from rich.text    import Text
 class Error(SystemExit):
     '''
     #* Show an error message with its details and hint, then stop the program with the error code.
-    #? The error codes are listed in docs/動作要求.md.
+    #! Give each error its own code. Do not use the same code twice.
     #! Pass detail, hint, and code as keyword arguments, such as Error("Invalid device.", detail=f"run.device: {device!r}", hint="Use auto, cpu, or cuda.", code=4).
     '''
     

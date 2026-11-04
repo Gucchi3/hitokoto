@@ -1,6 +1,5 @@
 # @file hotaru.py
 # @brief Hotaru, a small GPT for edge devices (empty for now)
-# @author Kohei Yamaguchi, Claude
 
 from torch import nn
 

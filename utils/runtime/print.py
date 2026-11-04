@@ -1,6 +1,5 @@
 # @file print.py
 # @brief Training output
-# @author Kohei Yamaguchi, Claude
 
 from rich.console  import Console
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn, TimeElapsedColumn, TimeRemainingColumn
@@ -41,9 +40,13 @@ def print_metadata(config: SimpleNamespace) -> None:
         table.add_row("Alpha"        , str(config.train.distillation.alpha)      )
     table.add_row("", "")
     
-    # Training settings
+    # Training settings (Train Tokens counts the targets of all the weight updates)
+    tokens = config.train.steps * config.data.batch_size * config.train.accumulation_steps * config.data.max_length
     table.add_row("Training Method"      , config.train.method                              )
-    table.add_row("Epochs"               , str(config.train.epochs)                         )
+    table.add_row("Steps"                , str(config.train.steps)                          )
+    table.add_row("Train Tokens"         , f"{tokens:,}"                                    )
+    table.add_row("Eval Interval"        , str(config.train.eval_interval)                  )
+    table.add_row("Resume"               , str(config.train.resume)                         )
     table.add_row("Accumulation Steps"   , str(config.train.accumulation_steps)             )
     table.add_row("Max Gradient Norm"    , str(config.train.max_grad_norm)                  )
     table.add_row("CUDA Graph"           , str(config.train.cuda_graph)                     )
@@ -60,29 +63,32 @@ def print_metadata(config: SimpleNamespace) -> None:
     return None
 
 
-def print_epoch(history: list[dict[str, int | float]], epochs: int) -> None:
+def print_validation(history: list[dict[str, int | float]], steps: int) -> None:
     '''
-    #* Show the results of the last epoch in one line.
+    #* Show the results of the last validation in one line.
     #? Called from utils/trainer/loop.py.
     '''
     
     # Make the line from the last record
     record  = history[-1]
     message = Text()
-    message.append("Epoch"                          , style="bold cyan"   )
-    message.append(f" {record['epoch']}/{epochs}"   , style="cyan"        )
-    message.append(" | "                            )
-    message.append("lr"                             , style="bold magenta")
-    message.append(f"={record['learning_rate']:.3e}", style="magenta"     )
-    message.append(" | "                            )
-    message.append("train loss"                     , style="bold yellow" )
-    message.append(f"={record['train_loss']:.3f}"   , style="yellow"      )
-    message.append(" | "                            )
-    message.append("validation loss"                , style="bold blue"   )
-    message.append(f"={record['val_loss']:.3f} "    , style="blue"        )
-    message.append("accuracy"                       , style="bold red"    )
-    message.append(f"={record['val_acc']:.2%}"      , style="red"         )
-    if record["val_loss"] == record["best_loss"]:
+    message.append("Step"                                   , style="bold cyan"   )
+    message.append(f" {record['step']}/{steps}"             , style="cyan"        )
+    message.append(f" ({record['tokens'] / 1e6:.1f}M tokens)", style="cyan"        )
+    message.append(" | "                                    )
+    message.append("lr"                                     , style="bold magenta")
+    message.append(f"={record['learning_rate']:.3e}"        , style="magenta"     )
+    message.append(" | "                                    )
+    message.append("train loss"                             , style="bold yellow" )
+    message.append(f"={record['train_loss']:.3f}"           , style="yellow"      )
+    message.append(" | "                                    )
+    message.append("validation loss"                        , style="bold blue"   )
+    message.append(f"={record['val_loss']:.3f} "            , style="blue"        )
+    message.append("perplexity"                             , style="bold blue"   )
+    message.append(f"={record['val_ppl']:.2f} "             , style="blue"        )
+    message.append("accuracy"                               , style="bold red"    )
+    message.append(f"={record['val_acc']:.2%}"              , style="red"         )
+    if record["val_ppl"] == record["best_ppl"]:
         message.append(" (best)", style="bold green")
     
     # Show the line
@@ -93,7 +99,7 @@ def print_epoch(history: list[dict[str, int | float]], epochs: int) -> None:
 def print_progress() -> Progress:
     '''
     #* Make a progress line with the step count and the running loss. The line goes away when it ends.
-    #? Used in utils/trainer/epoch.py with a with statement. Add a task with a loss field, and update the loss with progress.update().
+    #? Used in utils/trainer/train.py and utils/trainer/evaluate.py with a with statement. Add a task with a loss field, and update the loss with progress.update().
     '''
     
     return Progress(TextColumn("[bold cyan]{task.description}"), BarColumn(), MofNCompleteColumn(), TimeElapsedColumn(), TimeRemainingColumn(), TextColumn("loss: {task.fields[loss]}"), transient=True)

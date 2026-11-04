@@ -1,6 +1,5 @@
 # @file scheduler.py
 # @brief Build a scheduler
-# @author Kohei Yamaguchi, Claude
 
 ##########################################################
 '''

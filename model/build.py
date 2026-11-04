@@ -1,6 +1,5 @@
 # @file build.py
 # @brief Build a model from its name
-# @author Kohei Yamaguchi, Claude
 
 ##########################################################
 '''

@@ -7,7 +7,9 @@
     },
     "data": {
         "name"                 : "pretrain",
-        "root"                 : "data",
+        "sources"              : [
+            {"root": "data/tinystories", "repeat": 1.0}
+        ],
         "batch_size"           : 64,
         "num_workers"          : 8,
         "max_length"           : 256,
@@ -22,11 +24,13 @@
     },
     "train": {
         "method"            : "normal",
-        "epochs"            : 1,
+        "steps"             : 30000,
+        "eval_interval"     : 1000,
         "accumulation_steps": 1,
         "max_grad_norm"     : 1.0,
         "cuda_graph"        : true,
         "log_interval"      : 20,
+        "resume"            : null,
         "loss": {
             "name": "cross_entropy"
         },
@@ -43,6 +47,19 @@
         "distillation": {
             "temperature": 2.0,
             "alpha"      : 0.5
+        }
+    },
+    "validator": {
+        "chat": {
+            "style"         : "text",
+            "max_new_tokens": 128,
+            "temperature"   : 0.8,
+            "top_k"         : 40
+        },
+        "benchmark": {
+            "tasks"     : ["blimp", "arc_easy", "wikitext2"],
+            "batch_size": 64,
+            "data_dir"  : "data/benchmark"
         }
     }
 }

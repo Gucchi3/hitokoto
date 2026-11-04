@@ -1,19 +1,22 @@
-from .epoch    import evaluate_epoch, train_epoch
-from .loop     import train_loop
-from .pipeline import train_pipeline
-from .types    import EpochMetrics, TrainingComponents
+from .evaluate import evaluate_epoch
+from .loop     import loop_train
+from .pipeline import pipeline_train
+from .train    import train_steps
+from .types    import Metrics, TrainState, TrainingComponents
 
 '''
 trainer/
 ├── __init__.py
-├── epoch.py
-│   ├── train_epoch()
+├── evaluate.py
 │   └── evaluate_epoch()
 ├── loop.py
-│   └── train_loop()
+│   └── loop_train()
 ├── pipeline.py
-│   └── train_pipeline()
+│   └── pipeline_train()
+├── train.py
+│   └── train_steps()
 └── types.py
-    ├── EpochMetrics
-    └── TrainingComponents
+    ├── Metrics
+    ├── TrainingComponents
+    └── TrainState
 '''

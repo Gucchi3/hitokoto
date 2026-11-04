@@ -1,6 +1,5 @@
 # @file optimizer.py
 # @brief Build an optimizer
-# @author Kohei Yamaguchi, Claude
 
 ##########################################################
 '''

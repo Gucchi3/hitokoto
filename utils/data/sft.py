@@ -1,6 +1,5 @@
 # @file sft.py
 # @brief Build the DataBundle for SFT on daily talk (empty for now)
-# @author Kohei Yamaguchi, Claude
 
 from types import SimpleNamespace
 

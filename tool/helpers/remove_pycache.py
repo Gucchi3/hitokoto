@@ -1,22 +1,19 @@
 # @file remove_pycache.py
-# @brief Remove Python caches from the training workflow
-# @author Kohei Yamaguchi, Claude
+# @brief Remove Python caches from the command line
 
-from pathlib import Path
-
-import shutil
+from utils.runtime import remove_pycache
 
 
 
-def remove_pycache() -> None:
+def run_remove_pycache() -> None:
     '''
     #* Remove all __pycache__ folders under the current folder.
-    #? Called from utils/trainer/pipeline.py.
+    #! Run from the project folder, such as python -m tool.helpers.remove_pycache.
     '''
     
-    # Remove the deepest folders first
-    cache_dirs = sorted(Path.cwd().rglob("__pycache__"), key=lambda path: len(path.parts), reverse=True)
-    for cache_dir in cache_dirs:
-        if cache_dir.is_dir() and not cache_dir.is_symlink():
-            shutil.rmtree(cache_dir)
+    remove_pycache()
     return None
+
+
+if __name__ == "__main__":
+    run_remove_pycache()

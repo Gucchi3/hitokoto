@@ -1,6 +1,5 @@
 # @file bundle.py
 # @brief Choose a DataBundle builder from the dataset name
-# @author Kohei Yamaguchi, Claude
 
 ##########################################################
 '''
