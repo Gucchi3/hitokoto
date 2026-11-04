@@ -1,12 +1,12 @@
 # @file save.py
 # @brief Save training files
 
-from dataclasses import asdict
-from pathlib     import Path
-from types       import SimpleNamespace
+from dataclasses       import asdict
+from matplotlib.figure import Figure
+from pathlib           import Path
+from types             import SimpleNamespace
 
 import json
-import matplotlib.pyplot as plt
 
 from utils.data import DatasetMetadata
 
@@ -38,6 +38,7 @@ def save_graph(history: list[dict[str, int | float]], log_dir: Path) -> None:
     '''
     #* Save the loss and accuracy curves to training_curves.png, with the number of weight updates on the x-axis.
     #? Called from utils/trainer/loop.py after each validation.
+    #! The figure is made with Figure, not pyplot, so no screen backend (Tk on Windows) is used. A Tk figure that is cleaned up in another thread (such as the pin_memory thread of a DataLoader) stops the whole run with Tcl_AsyncDelete.
     '''
     
     # Take each value out of the history
@@ -49,7 +50,9 @@ def save_graph(history: list[dict[str, int | float]], log_dir: Path) -> None:
     latest_acc   = history[-1]["val_acc"]
     
     # Make the figure with two graphs
-    fig, (ax_loss, ax_acc) = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
+    fig     = Figure(figsize=(12, 4), layout="constrained")
+    ax_loss = fig.add_subplot(1, 2, 1)
+    ax_acc  = fig.add_subplot(1, 2, 2)
     
     # Left: train and validation loss, with the best validation perplexity
     ax_loss.plot(steps, train_losses, color="blue"  , marker=None, label="Train loss"     )
@@ -68,5 +71,4 @@ def save_graph(history: list[dict[str, int | float]], log_dir: Path) -> None:
     
     # Save the figure
     fig.savefig(log_dir / "training_curves.png", dpi=150)
-    plt.close(fig)
     return None
