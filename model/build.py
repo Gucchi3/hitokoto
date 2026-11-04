@@ -18,9 +18,11 @@ import torch
 
 from utils.exceptions import Error
 from .hotaru          import Hotaru
+from .supra_mini_v6   import SupraMiniV6
 
 MODEL_REGISTRY: dict[str, type[nn.Module]] = {
-    "hotaru": Hotaru,
+    "hotaru"       : Hotaru,
+    "supra_mini_v6": SupraMiniV6,
 }
 
 

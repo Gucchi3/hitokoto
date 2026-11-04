@@ -38,8 +38,26 @@ def build_cosine_annealing_scheduler(config: SimpleNamespace, optimizer: Optimiz
     return LambdaLR(optimizer, lambda step: (step + 1) / warmup_steps if step < warmup_steps else minimum_ratio + (1 - minimum_ratio) * 0.5 * (1 + math.cos(math.pi * min((step - warmup_steps) / decay_steps, 1.0))))
 
 
+def build_wsd_scheduler(config: SimpleNamespace, optimizer: Optimizer, total_steps: int) -> LRScheduler:
+    '''
+    #* Make a WSD (warmup, stable, decay) scheduler: raise the learning rate in a straight line for warmup_steps, keep it at the top, then lower it to the minimum in the last decay_fraction of the steps along 1 - sqrt(progress).
+    #? The same shape as get_wsd_lambda() in train_model.py of Supra-Mini-v6, which uses decay_fraction 0.2 and a minimum of 0.
+    #! The learning rate in the config is the top value. One step is one weight update (not one batch, with gradient accumulation).
+    '''
+    
+    # Read the settings, and find the step where the decay starts
+    warmup_steps  = config.train.scheduler.warmup_steps
+    minimum_ratio = config.train.scheduler.minimum_learning_rate / config.train.optimizer.learning_rate
+    decay_start   = int(total_steps * (1 - config.train.scheduler.decay_fraction))
+    decay_steps   = max(total_steps - decay_start, 1)
+    
+    # Give the ratio of the learning rate to the top value at each step
+    return LambdaLR(optimizer, lambda step: (step + 1) / warmup_steps if step < warmup_steps else 1.0 if step < decay_start else minimum_ratio + (1 - minimum_ratio) * (1 - math.sqrt(min((step - decay_start) / decay_steps, 1.0))))
+
+
 SCHEDULER_REGISTRY: dict[str, SchedulerBuilder] = {
     "cosine_annealing": build_cosine_annealing_scheduler,
+    "wsd"             : build_wsd_scheduler,
 }
 
 

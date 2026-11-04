@@ -1,18 +1,21 @@
 # @file corpus.py
 # @brief Split a corpus of texts or talks, train a tokenizer, and write the token files
 
-from collections.abc import Callable, Iterator
-from itertools       import batched
-from pathlib         import Path
-from rich.console    import Console
-from rich.table      import Table
-from tokenizers      import Tokenizer
-from typing          import Literal
+from collections.abc    import Callable, Iterator
+from concurrent.futures import ProcessPoolExecutor
+from functools          import partial
+from itertools          import batched
+from pathlib            import Path
+from rich.console       import Console
+from rich.table         import Table
+from tokenizers         import Tokenizer
+from typing             import Literal
 
 import argparse
 import hashlib
 import json
 import numpy as np
+import os
 
 from utils.exceptions import Error
 from utils.runtime    import remove_pycache
@@ -30,7 +33,8 @@ USER_ID        = 2
 BOT_ID         = 3
 SPLIT_NAMES    = ("train", "validation", "test")
 STAGES         = ("download", "split", "tokenizer", "binarize", "all")
-ENCODE_BATCH   = 10000
+ENCODE_BATCH   = 1000
+ENCODE_WORKERS = os.cpu_count() or 1
 CHARS_PER_GB   = 10**9
 
 # The IDs put before and after the IDs of a text of each role
@@ -108,10 +112,11 @@ def train_corpus_tokenizer(corpora: dict[Path, CorpusReader], tokenizer_dir: Pat
 def binarize_corpus(name: str, data_dir: Path, tokenizer_dir: Path, read: CorpusReader) -> None:
     '''
     #* Turn every item into token IDs with its role tokens, and write them as uint16 to train.bin, validation.bin, and test.bin, with the start of each item in .idx and meta.json.
-    #? Called from run_corpus() for the binarize and all stages. Bin2dataset in utils/data/bin2dataset.py reads the .bin files.
+    #? Called from run_corpus() for the binarize and all stages. _corpus_encode() encodes the items in the worker processes. Bin2dataset in utils/data/bin2dataset.py reads the .bin files.
     #! A text gets <eos> after it. A user turn gets <user> before it. A bot turn gets <bot> before it and <eos> after it (see ROLE_TOKENS).
     #! Each text is encoded alone and joined to the role tokens by IDs, so the result does not depend on how the tokenizer treats spaces or the language.
     #! Run split_corpus() first. The tokenizer in tokenizer_dir is used as it is, so an existing tokenizer also works. The files get their names only when all items are written.
+    #! ENCODE_WORKERS processes encode the items, ENCODE_BATCH items at a time. Each uses one thread (TOKENIZERS_PARALLELISM=false, which the new processes get). One process with many threads used only one or two CPU cores on Windows.
     '''
     
     # Read the split and the tokenizer
@@ -129,25 +134,20 @@ def binarize_corpus(name: str, data_dir: Path, tokenizer_dir: Path, read: Corpus
     items     = [0, 0, 0]
     tokens    = [0, 0, 0]
     roles     = set[Role]()
+    
+    # Encode the batches in the worker processes, and write the results in the order of the items. map() reads the items only buffersize batches ahead, so the memory stays small
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
     try:
-        for batch in batched(zip(read(data_dir / "raw"), split, strict=True), ENCODE_BATCH):
-            # Encode all the texts of the batch at once, then join the IDs of each item with its role tokens
-            encodings = iter(tokenizer.encode_batch([text for item, _ in batch for _, text in item]))
-            joined    = [list[int]() for _ in SPLIT_NAMES]
-            starts    = [list[int]() for _ in SPLIT_NAMES]
-            for item, part in batch:
-                starts[part].append(tokens[part] + len(joined[part]))
-                for role, _ in item:
-                    prefix, suffix = ROLE_TOKENS[role]
-                    joined[part].extend(prefix + next(encodings).ids + suffix)
-                    roles.add(role)
-                items[part] += 1
-            
-            # Write the IDs and the starts of this batch
-            for part, (ids, item_starts) in enumerate(zip(joined, starts)):
-                bin_files[part].write(np.array(ids, dtype=np.uint16).tobytes())
-                idx_files[part].write(np.array(item_starts, dtype=np.uint64).tobytes())
-                tokens[part] += len(ids)
+        with ProcessPoolExecutor(ENCODE_WORKERS) as pool:
+            batches = batched(zip(read(data_dir / "raw"), split, strict=True), ENCODE_BATCH)
+            for ids_by_split, starts_by_split, batch_roles in pool.map(partial(_corpus_encode, str(tokenizer_path)), batches, buffersize=2 * ENCODE_WORKERS):
+                # Write the IDs and the starts of the items of each split. The starts in the batch move by the tokens written before
+                for part, (ids, starts) in enumerate(zip(ids_by_split, starts_by_split)):
+                    bin_files[part].write(ids.tobytes())
+                    idx_files[part].write((starts + tokens[part]).tobytes())
+                    items[part]  += len(starts)
+                    tokens[part] += len(ids)
+                roles |= batch_roles
         
         # End each .idx with the number of tokens, so that item i is ids[idx[i]:idx[i + 1]]
         for part, idx_file in enumerate(idx_files):
@@ -188,6 +188,30 @@ def binarize_corpus(name: str, data_dir: Path, tokenizer_dir: Path, read: Corpus
     return None
 
 
+def _corpus_encode(tokenizer_path: str, batch: tuple[tuple[CorpusItem, int], ...]) -> tuple[list[np.ndarray], list[np.ndarray], set[Role]]:
+    '''
+    #* Encode the items of one batch, and return for each split the joined token IDs (uint16) and the start of each item in them (uint64), with the roles in the batch.
+    #? Used by binarize_corpus(), which runs it in the worker processes, one batch of ENCODE_BATCH items at a time. batch holds each item with its split (0 train, 1 validation, 2 test).
+    #! The tokenizer is read from the file for each batch. It takes a short time next to the encoding.
+    '''
+    
+    # Encode all the texts of the batch at once, without the offsets of the tokens (they are not used)
+    tokenizer = Tokenizer.from_file(tokenizer_path)
+    encodings = iter(tokenizer.encode_batch_fast([text for item, _ in batch for _, text in item]))
+    
+    # Join the IDs of each item with its role tokens, in the list of its split
+    joined = [list[int]() for _ in SPLIT_NAMES]
+    starts = [list[int]() for _ in SPLIT_NAMES]
+    roles  = set[Role]()
+    for item, part in batch:
+        starts[part].append(len(joined[part]))
+        for role, _ in item:
+            prefix, suffix = ROLE_TOKENS[role]
+            joined[part].extend(prefix + next(encodings).ids + suffix)
+            roles.add(role)
+    return [np.array(ids, dtype=np.uint16) for ids in joined], [np.array(item_starts, dtype=np.uint64) for item_starts in starts], roles
+
+
 def _corpus_load_split(data_dir: Path) -> tuple[np.ndarray, np.ndarray, list[float], int]:
     '''
     #* Read split.npz, and return the split of each item, the size of each item, the split ratio, and the seed.
@@ -212,14 +236,14 @@ def run_corpus(description: str, choose: Callable[[argparse.Namespace], Corpora]
     
     # Make the argument parser
     parser = argparse.ArgumentParser(description=description, parents=parents)
-    parser.add_argument("stage"           , choices=STAGES                                                                       )
-    parser.add_argument("--data_root"     , type=Path , default=Path("data")                                                     )
-    parser.add_argument("--tokenizer_dir" , type=Path , default=tokenizer_dir                                                    )
-    parser.add_argument("--tokenizer_type", choices=list(TOKENIZER_REGISTRY), default="bytelevel_bpe"                            )
-    parser.add_argument("--vocab_size"    , type=int  , default=4096                                                             )
-    parser.add_argument("--tokenizer_gb"  , type=float, default=2.0, metavar="GB"                                                )
-    parser.add_argument("--split"         , type=float, default=[0.99, 0.005, 0.005], nargs=3, metavar=("TRAIN", "VALID", "TEST"))
-    parser.add_argument("--seed"          , type=int  , default=0                                                                )
+    parser.add_argument("stage"           , choices=STAGES                                                                        )
+    parser.add_argument("--data_root"     , type=Path , default=Path("data")                                                      )
+    parser.add_argument("--tokenizer_dir" , type=Path , default=tokenizer_dir                                                     )
+    parser.add_argument("--tokenizer_type", choices=list(TOKENIZER_REGISTRY), default="bytelevel_bpe"                             )
+    parser.add_argument("--vocab_size"    , type=int  , default=4096                                                              )
+    parser.add_argument("--tokenizer_gb"  , type=float, default=2.0, metavar="GB"                                                 )
+    parser.add_argument("--split"         , type=float, default=[0.995, 0.005, 0.000], nargs=3, metavar=("TRAIN", "VALID", "TEST"))
+    parser.add_argument("--seed"          , type=int  , default=0                                                                 )
     
     # Stop quietly on Ctrl+C, and always remove the caches, even after an error
     try:

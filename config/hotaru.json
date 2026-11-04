@@ -35,9 +35,11 @@
             "name": "cross_entropy"
         },
         "optimizer": {
-            "name"         : "adamw",
-            "learning_rate": 0.0005,
-            "weight_decay" : 0.01
+            "name"              : "adamw",
+            "learning_rate"     : 0.0005,
+            "weight_decay"      : 0.01,
+            "betas"             : [0.9, 0.999],
+            "embedding_lr_scale": 1.0
         },
         "scheduler": {
             "name"                 : "cosine_annealing",

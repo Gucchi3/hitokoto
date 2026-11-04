@@ -17,15 +17,17 @@ from typing   import Literal
 import torch
 import torch.nn as nn
 
-from utils.exceptions import Error
+from utils.exceptions      import Error
+from .cross_entropy_z_loss import CrossEntropyZLoss
 
 LossKind = Literal["softmax", "sigmoid"]
 
 IGNORE_INDEX = -100
 
 LOSS_REGISTRY: dict[str, tuple[type[nn.Module], LossKind]] = {
-    "cross_entropy"  : (nn.CrossEntropyLoss , "softmax"),
-    "bce_with_logits": (nn.BCEWithLogitsLoss, "sigmoid"),
+    "cross_entropy"       : (nn.CrossEntropyLoss , "softmax"),
+    "cross_entropy_z_loss": (CrossEntropyZLoss   , "softmax"),
+    "bce_with_logits"     : (nn.BCEWithLogitsLoss, "sigmoid"),
 }
 
 

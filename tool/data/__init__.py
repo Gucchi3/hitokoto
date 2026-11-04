@@ -5,6 +5,7 @@ data/
 │   ├── split_corpus()
 │   ├── train_corpus_tokenizer()
 │   ├── binarize_corpus()
+│   ├── _corpus_encode()
 │   ├── _corpus_load_split()
 │   └── run_corpus()
 ├── hf_text.py
