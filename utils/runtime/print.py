@@ -6,6 +6,13 @@ from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn, T
 from rich.table    import Table
 from rich.text     import Text
 from types         import SimpleNamespace
+from typing        import Literal
+
+# Colors of the train and validation loss, shared by the progress line and the graph of save_graph() in save.py
+LOSS_COLORS = {
+    "train"     : "#00bfff",
+    "validation": "#ff8c00",
+}
 
 
 
@@ -96,10 +103,12 @@ def print_validation(history: list[dict[str, int | float]], steps: int) -> None:
     return None
 
 
-def print_progress() -> Progress:
+def print_progress(kind: Literal["train", "validation"]) -> Progress:
     '''
     #* Make a progress line with the step count and the running loss. The line goes away when it ends.
-    #? Used in utils/trainer/train.py and utils/trainer/evaluate.py with a with statement. Add a task with a loss field, and update the loss with progress.update().
+    #? Used with a with statement in utils/trainer/train.py (kind="train") and utils/trainer/evaluate.py (kind="validation"). Add a task with a loss field, and update the loss with progress.update().
+    #! The loss has the color of kind in LOSS_COLORS, the same color as its curve in the graph.
     '''
     
-    return Progress(TextColumn("[bold cyan]{task.description}"), BarColumn(), MofNCompleteColumn(), TimeElapsedColumn(), TimeRemainingColumn(), TextColumn("loss: {task.fields[loss]}"), transient=True)
+    color = LOSS_COLORS[kind]
+    return Progress(TextColumn("[bold cyan]{task.description}"), BarColumn(), MofNCompleteColumn(), TimeElapsedColumn(), TimeRemainingColumn(), TextColumn(f"[bold {color}]loss:[/] [{color}]{{task.fields[loss]}}"), transient=True)

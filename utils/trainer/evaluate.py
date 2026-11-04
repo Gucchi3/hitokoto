@@ -1,4 +1,4 @@
-# @file epoch.py
+# @file evaluate.py
 # @brief Evaluate the model on all the batches of a loader
 
 from torch.utils.data import DataLoader
@@ -29,7 +29,7 @@ def evaluate_epoch(config: SimpleNamespace, device: torch.device, model: nn.Modu
     samples     = 0
     
     # Evaluate each batch without gradients
-    with torch.no_grad(), print_progress() as progress:
+    with torch.no_grad(), print_progress("validation") as progress:
         task = progress.add_task(description, total=len(loader), loss="-")
         for step, batch in enumerate(loader, start=1):
             # Run the model, with BF16 AMP on CUDA when low_precision is on

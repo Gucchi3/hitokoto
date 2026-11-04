@@ -9,6 +9,7 @@ import json
 import matplotlib.pyplot as plt
 
 from utils.data import DatasetMetadata
+from .print     import LOSS_COLORS
 
 
 
@@ -38,6 +39,8 @@ def save_graph(history: list[dict[str, int | float]], log_dir: Path) -> None:
     '''
     #* Save the loss and accuracy curves to training_curves.png, with the number of weight updates on the x-axis.
     #? Called from utils/trainer/loop.py after each validation.
+    #! The legend shows the best and the latest values: the validation perplexity next to the validation loss, and the accuracy next to the validation accuracy (best = the highest so far).
+    #! Each legend goes to the place where it covers the curves the least (loc="best"), so it can move from one save to the next.
     '''
     
     # Take each value out of the history
@@ -45,26 +48,26 @@ def save_graph(history: list[dict[str, int | float]], log_dir: Path) -> None:
     train_losses = [record["train_loss"] for record in history]
     val_losses   = [record["val_loss"]   for record in history]
     val_accs     = [record["val_acc"]    for record in history]
-    best_ppl     = history[-1]["best_ppl"]
-    latest_acc   = history[-1]["val_acc"]
+    
+    # Make the legend labels of the validation curves, with the best and the latest values
+    loss_label = f"Validation loss (ppl best: {history[-1]['best_ppl']:.2f}, latest: {history[-1]['val_ppl']:.2f})"
+    acc_label  = f"Validation accuracy (best: {max(val_accs):.3f}, latest: {val_accs[-1]:.3f})"
     
     # Make the figure with two graphs
     fig, (ax_loss, ax_acc) = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
     
-    # Left: train and validation loss, with the best validation perplexity
-    ax_loss.plot(steps, train_losses, color="blue"  , marker=None, label="Train loss"     )
-    ax_loss.plot(steps, val_losses  , color="yellow", marker=None, label="Validation loss")
+    # Left: train loss in light blue and validation loss in orange
+    ax_loss.plot(steps, train_losses, color=LOSS_COLORS["train"]     , marker=None, label="Train loss")
+    ax_loss.plot(steps, val_losses  , color=LOSS_COLORS["validation"], marker=None, label=loss_label  )
     ax_loss.set_xlabel("Step")
     ax_loss.set_ylabel("Loss")
-    ax_loss.text(0.03, 0.97, f"Best validation perplexity: {best_ppl:.2f}", transform=ax_loss.transAxes, va="top")
-    ax_loss.legend(loc="upper right")
+    ax_loss.legend(loc="best")
     
-    # Right: validation accuracy, with the latest value
-    ax_acc.plot(steps, val_accs, color="red", marker=None, label="Validation accuracy")
+    # Right: validation accuracy
+    ax_acc.plot(steps, val_accs, color="red", marker=None, label=acc_label)
     ax_acc.set_xlabel("Step")
     ax_acc.set_ylabel("Accuracy")
-    ax_acc.text(0.03, 0.97, f"Latest acc: {latest_acc:.3f}", transform=ax_acc.transAxes, va="top")
-    ax_acc.legend(loc="upper right")
+    ax_acc.legend(loc="best")
     
     # Save the figure
     fig.savefig(log_dir / "training_curves.png", dpi=150)

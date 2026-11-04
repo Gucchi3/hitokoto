@@ -91,7 +91,7 @@ def train_steps(config: SimpleNamespace, device: torch.device, model: nn.Module,
     # Run on a side stream for the CUDA graph, as PyTorch asks for the warmup and the capture
     if side_stream is not None:
         side_stream.wait_stream(torch.cuda.current_stream())
-    with torch.cuda.stream(side_stream), print_progress() as progress:
+    with torch.cuda.stream(side_stream), print_progress("train") as progress:
         task = progress.add_task("Train", total=config.train.steps, completed=state.step, loss="-")
         while done < updates:
             # Start the train data at the place in the epoch where the training is
