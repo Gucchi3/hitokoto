@@ -11,6 +11,7 @@
 !/website/
 !/.github/
 !/config/
+!/tests/
 
 # docs: only the images (the specs, the coding rules, and the reading list stay on this machine)
 /docs/*

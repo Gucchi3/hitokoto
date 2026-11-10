@@ -4,20 +4,94 @@
 
 ```powershell
 uv venv --python 3.14
-uv pip install --python .venv rich huggingface-hub tokenizers pyarrow
+uv pip install --python .venv -r pyproject.toml
 ```
 
-PyTorchは、[公式のインストールページ](https://pytorch.org/get-started/locally/)でOS、Python、CUDAの構成を選び、表示されたGPU用のインストールコマンドを使用してください。表示されたコマンドの `pip3 install...` を `uv pip install...` に置き換えて実行します。GPUを使う場合は、PyTorchを通常のPyPIから選ばず、公式ページが指定するCUDA用のインデックスをそのまま使用してください。
+続いて、[PyTorch 公式](https://pytorch.org/get-started/locally/)で OS・CUDA に合うコマンドを選び、`pip3 install...` を `uv pip install...` に置き換えて実行します。
+
+## 実行方法
+
+### 初回のみ：データ・トークナイザの準備
+
+使うデータを選び、ダウンロード → 分割 → トークナイザ作成 → トークン化を一括実行。  
+指定したデータを全件取得・使用。未指定のデータは除外。
+
+```powershell
+python -m tool.data all --tinystories --fineweb_edu --finemath --tokenizer_dir .\model\weight\hotaru
+```
+
+> [!WARNING]
+> 指定先の既存トークナイザは上書きされます。
+### 学習
+
+```powershell
+python main.py --config .\config\hotaru.json
+```
+
+## 使用可能なデータセット
+>[!NOTE]
+>`./tool/data/sources.py`を参照
+- **[TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories)**
+- **[FineWeb-Edu](https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu)**
+- **[Cosmopedia](https://huggingface.co/datasets/HuggingFaceTB/smollm-corpus/tree/main/cosmopedia-v2)**
+- **[FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath)**
 
 ## 実装されているモデル
-
-- **Glint-2**
+>[!NOTE]
+>`./model/`を参照
+- **[Glint-2](https://huggingface.co/Glint-Research/Glint-2)**
+- **[Supra Mini v6](https://huggingface.co/SupraLabs/Supra-Mini-v6-1M)**
+- **Yokoyama**
 - **Hotaru**
-- **Supra Mini v6**
-- **Yokoyama**: EmbBERTを基にした、縮小埋め込み、差分スキップ注意、因果畳み込みを組み合わせたデコーダーモデル
 
 ## 測定可能なベンチマーク
+>[!NOTE]
+>`./utils/validator/benchmark.py`を参照
 
-- **BLiMP**: 文法的な文と非文法的な文を比較する正解率
-- **ARC-Easy**: 選択式問題の正解率
-- **WikiText-2**: バイト単位およびトークン単位のパープレキシティ
+`--mode benchmark` またはテストデータがない場合の学習後に実行。データは初回に自動ダウンロード。
+
+### [Tiny-ML Leaderboard](https://huggingface.co/spaces/Glint-Research/Tiny-ML-Leaderboard)
+
+- **[BLiMP](https://huggingface.co/datasets/nyu-mll/blimp)** (`blimp`)
+- **[ARC-Easy](https://huggingface.co/datasets/allenai/ai2_arc)** (`arc_easy_tinyml`)
+- **[WikiText-2](https://huggingface.co/datasets/Salesforce/wikitext)** (`wikitext2`)
+
+### [Open SLM Leaderboard](https://axiomiclabs-open-slm-leaderboard.static.hf.space/index.html)
+
+- **[HellaSwag](https://huggingface.co/datasets/Rowan/hellaswag)** (`hellaswag`)
+- **[ARC-Easy](https://huggingface.co/datasets/allenai/ai2_arc)** (`arc_easy`)
+- **[ARC-Challenge](https://huggingface.co/datasets/allenai/ai2_arc)** (`arc_challenge`)
+- **[PIQA](https://huggingface.co/datasets/baber/piqa)** (`piqa`)
+- **[ArithMark-3](https://huggingface.co/datasets/AxiomicLabs/Arithmark-3.0)** (`arithmark3`)
+
+> [!WARNING]
+> `arc_easy_tinyml` と `arc_easy` は測定方法が異なります。Int Index の ARC-Easy には `arc_easy` が使用されます。
+
+- すべて `float32` で測定します。
+- Open SLM は、選択肢が1つでも `data.max_length`（ArithMark-3 は `data.max_length - 1`）トークンを超える問題をスキップし、精度の分母から除外します。
+### Int Index と Avg
+
+$$
+\mathrm{Int\ Index} =
+\frac{
+\widehat{\mathrm{HellaSwag}} + \widehat{\mathrm{ARC}} + \widehat{\mathrm{PIQA}} + 0.65 \times \widehat{\mathrm{ArithMark\text{-}3}}
+}{
+1 + 1 + 1 + 0.65
+}
+$$
+
+$$
+\widehat{s} = 100 \times \frac{s - c}{100 - c}
+$$
+
+- $s$: スコア（%）、$c$: チャンスレート（PIQA は 50、ほかは 25）。
+- ARC = `arc_easy` と `arc_challenge` の平均（片方だけなら、その値）。
+- 未実行の項目は分子・分母から除外。4項目中2項目以上で `int_index` と `open_slm_avg` を算出。
+- Avg = 変換前のスコアの単純平均。
+
+## テスト
+
+```powershell
+uv pip install --python .venv -r pyproject.toml --extra test
+.venv\Scripts\python -m pytest
+```

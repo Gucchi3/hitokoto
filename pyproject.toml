@@ -1,3 +1,19 @@
+[project]
+name = "hitokoto"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "rich",
+    "huggingface-hub",
+    "tokenizers",
+    "pyarrow",
+    "numpy",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "hypothesis"]
+
 # Settings for the checks in docs/coding_rules.md (ruff check and pyright only, no formatter)
 
 [tool.ruff]
@@ -14,3 +30,8 @@ typeCheckingMode = "standard"
 pythonVersion    = "3.14"
 venvPath         = "."
 venv             = ".venv"
+
+[tool.pytest.ini_options]
+testpaths  = ["tests"]
+pythonpath = ["."]
+addopts    = "--import-mode=importlib"

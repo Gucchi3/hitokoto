@@ -41,7 +41,7 @@ def build_pretrain_bundle(config: SimpleNamespace, seed: int) -> DataBundle:
         paths = [root / "meta.json", *(root / f"{split}.bin" for split in SPLIT_NAMES)]
         if not all(path.exists() for path in paths):
             raise Error("Token files are missing.", detail=f"Missing: {', '.join(str(path) for path in paths if not path.exists())}",
-                        hint="Run a dataset script, such as python -m tool.data.tinystories all, and list its folder in data.sources.", code=21)
+                        hint="Run python -m tool.data all with dataset flags, such as --tinystories, and list their folders in data.sources.", code=21)
         meta  = json.loads((root / "meta.json").read_text(encoding="utf-8"))
         if meta["tokenizer_sha256"] != tokenizer_hash:
             raise Error("The token files do not match the tokenizer.", detail=f"The tokenizer hash in {root / 'meta.json'} differs from {tokenizer_path}.",

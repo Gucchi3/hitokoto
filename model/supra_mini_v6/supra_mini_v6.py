@@ -25,7 +25,7 @@ INIT_STD          = 0.02
 class SupraMiniV6(nn.Module):
     '''
     #* Hold Supra-Mini-v6, a Llama model of 1,410,688 parameters: 6 layers, hidden size 128, 4 query heads and 2 key-value heads, and one embedding for both the input and the output.
-    #? Made by build_model() in model/build.py, with model.name = "supra_mini_v6". The sizes follow config.json of SupraLabs/Supra-Mini-v6-1M on the Hugging Face Hub. Its tokenizer is made by hf_text.py in tool/data/ (model/weight/hotaru_edu/).
+    #? Made by build_model() in model/build.py, with model.name = "supra_mini_v6". The sizes follow config.json of SupraLabs/Supra-Mini-v6-1M on the Hugging Face Hub. Its tokenizer is made by python -m tool.data (model/weight/hotaru_edu/).
     #! The tokenizer must have VOCAB_SIZE (4096) tokens, the default --vocab_size of the dataset scripts in tool/data/. An input can have up to MAX_POSITIONS (1024) tokens.
     '''
     

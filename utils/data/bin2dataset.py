@@ -12,7 +12,7 @@ import torch
 class Bin2dataset(Dataset):
     '''
     #* Cut windows of max_length + 1 tokens out of a .bin file of uint16 token IDs, and give input_ids, attention_mask, and targets.
-    #? Used by build_pretrain_bundle() in pretrain.py. The .bin files are made by a dataset script in tool/data/, such as tinystories.py.
+    #? Used by build_pretrain_bundle() in pretrain.py. The .bin files are made by python -m tool.data.
     #! repeat sets how many times the windows are given: 1 gives each window once, 2 twice, and 0.5 the first half of them. An empty file (such as test.bin without test data) has no windows.
     #! The file is opened at the first __getitem__() in each DataLoader worker. Do not call __getitem__() before making the DataLoader, or each worker on Windows gets a copy of the whole file.
     '''

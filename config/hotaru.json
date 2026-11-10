@@ -59,7 +59,7 @@
             "top_k"         : 40
         },
         "benchmark": {
-            "tasks"     : ["blimp", "arc_easy", "wikitext2"],
+            "tasks"     : ["blimp", "arc_easy_tinyml", "wikitext2", "hellaswag", "arc_easy", "arc_challenge", "piqa", "arithmark3"],
             "batch_size": 64,
             "data_dir"  : "data/benchmark"
         }

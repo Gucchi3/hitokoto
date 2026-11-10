@@ -3,11 +3,10 @@ tool/
 ├── __init__.py
 ├── data/
 │   ├── __init__.py
+│   ├── __main__.py
 │   ├── corpus.py
-│   ├── hf_text.py
-│   ├── tinystories.py
-│   ├── tokenizer.py
-│   └── types.py
+│   ├── sources.py
+│   └── tokenizer.py
 └── helpers/
     ├── __init__.py
     └── remove_pycache.py

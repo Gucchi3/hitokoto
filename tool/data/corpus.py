@@ -220,7 +220,7 @@ def _corpus_load_split(data_dir: Path) -> tuple[np.ndarray, np.ndarray, list[flo
     
     split_path = data_dir / "split.npz"
     if not split_path.exists():
-        raise Error("Run the split stage first.", detail=f"Missing: {split_path}", hint="Run the split stage of the dataset script, such as python -m tool.data.tinystories split.", code=18)
+        raise Error("Run the split stage first.", detail=f"Missing: {split_path}", hint="Run python -m tool.data split with the same dataset flags.", code=18)
     with np.load(split_path) as saved:
         return saved["split"], saved["sizes"], saved["ratio"].tolist(), int(saved["seed"])
 
@@ -228,10 +228,10 @@ def _corpus_load_split(data_dir: Path) -> tuple[np.ndarray, np.ndarray, list[flo
 def run_corpus(description: str, choose: Callable[[argparse.Namespace], Corpora], tokenizer_dir: Path, parents: tuple[argparse.ArgumentParser, ...] = ()) -> None:
     '''
     #* Read the command line, check the values, and run the chosen stages for the corpora that choose() returns.
-    #? Called at the end of a dataset script, such as tool/data/tinystories.py. choose() gets the read command line, and returns the download and read functions of each corpus by its name.
+    #? Called by tool/data/__main__.py. choose() gets the read command line, and returns the download and read functions of each corpus by its name.
     #! Each corpus gets its own folder, data_root/name. All the corpora share one tokenizer: the tokenizer stage trains it on the train items of all of them, and the binarize stage uses it for each of them.
-    #! tokenizer_dir is the default of --tokenizer_dir. parents adds the options of the dataset script, such as the amounts in hf_text.py.
-    #! Run from the project folder, such as python -m tool.data.tinystories all. To keep an existing tokenizer, run download, split, and binarize, and skip the tokenizer stage.
+    #! tokenizer_dir is the default of --tokenizer_dir. parents adds the dataset selection flags.
+    #! Run from the project folder, such as python -m tool.data all --tinystories. To keep an existing tokenizer, run download, split, and binarize, and skip the tokenizer stage.
     '''
     
     # Make the argument parser
