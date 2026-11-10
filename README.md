@@ -1,28 +1,23 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/img/hitokoto-A-leaf-dark.svg">
-    <img src="docs/img/hitokoto-A-leaf-light.svg" alt="hitokoto" width="440">
-  </picture>
-</p>
+# SLM
 
-A tiny language model that hears one phrase and answers with one phrase, on a microcontroller. hitokoto (一言, "a word") aims at simple daily talk, like a pet robot or a smart speaker, and it will run on small devices such as the ESP32 or a small FPGA.
+## 環境構築
 
-hitokoto is still being built. For details, see the [documentation](https://gucchi3.github.io/hitokoto/) (coming soon).
+```powershell
+uv venv --python 3.14
+uv pip install --python .venv rich huggingface-hub tokenizers pyarrow
+```
 
-## Goals
+PyTorchは、[公式のインストールページ](https://pytorch.org/get-started/locally/)でOS、Python、CUDAの構成を選び、表示されたGPU用のインストールコマンドを使用してください。表示されたコマンドの `pip3 install...` を `uv pip install...` に置き換えて実行します。GPUを使う場合は、PyTorchを通常のPyPIから選ばず、公式ページが指定するCUDA用のインデックスをそのまま使用してください。
 
-### One phrase in, one phrase out
+## 実装されているモデル
 
-hitokoto will talk in short phrases about everyday things, and remember the last few turns of the talk.
+- **Glint-2**
+- **Hotaru**
+- **Supra Mini v6**
+- **Yokoyama**: EmbBERTを基にした、縮小埋め込み、差分スキップ注意、因果畳み込みを組み合わせたデコーダーモデル
 
-### Runs on tiny devices
+## 測定可能なベンチマーク
 
-The model will have only a few million numbers or less, so it fits in the memory of a microcontroller. The memory it uses for the talk will stay the same size, however long you talk.
-
-## Quick start
-
-Coming soon.
-
-## License
-
-Coming soon.
+- **BLiMP**: 文法的な文と非文法的な文を比較する正解率
+- **ARC-Easy**: 選択式問題の正解率
+- **WikiText-2**: バイト単位およびトークン単位のパープレキシティ

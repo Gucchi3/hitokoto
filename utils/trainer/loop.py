@@ -22,6 +22,7 @@ def loop_train(config: SimpleNamespace, device: torch.device, log_dir: Path, bun
     #? Called from pipeline.py. Uses train_steps() in train.py and evaluate_epoch() in evaluate.py.
     #! state says where to start: the first step, or the place saved in train_state.pt for train.resume. A resumed run starts again from the last validation.
     #! best.pth keeps the weights with the lowest validation perplexity. Pass a teacher only for distillation.
+    #! The empty_cache() before the validation lowers the peak of GPU memory (and of the Windows memory commit). It does not change the results.
     '''
     
     # Train and validate in turns until the last step
@@ -29,6 +30,8 @@ def loop_train(config: SimpleNamespace, device: torch.device, log_dir: Path, bun
         # Train until the next multiple of eval_interval or the last step, then validate
         updates       = min(config.train.eval_interval - state.step % config.train.eval_interval, config.train.steps - state.step)
         train_metrics = train_steps(config, device, model, teacher, bundle.train_loader, bundle.train_sampler, components, state, updates)
+        # Give back the memory of the CUDA graphs that train_steps() let go. It is not used again, and stays until the next capture
+        torch.cuda.empty_cache()
         val_metrics   = evaluate_epoch(config, device, model, bundle.validation_loader, components, "Validation", low_precision=True)
         
         # Save the latest weights, and the best weights by validation perplexity

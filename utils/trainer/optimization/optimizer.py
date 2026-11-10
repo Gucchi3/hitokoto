@@ -76,19 +76,21 @@ def build_normuon_optimizer(config: SimpleNamespace, model: nn.Module) -> Optimi
 
 def _optimizer_muon_groups(config: SimpleNamespace, model: nn.Module, muon: dict[str, Any]) -> list[dict[str, Any]]:
     '''
-    #* Return the groups of MuonAdamW: Muon for the weight matrices, AdamW for the embeddings (embedding_lr_scale times learning_rate), and AdamW for the rest (biases and norm weights).
+    #* Return the groups of MuonAdamW: Muon for the weight matrices, AdamW for the embeddings (embedding_lr_scale times learning_rate), and AdamW for the rest (biases, norm weights, and LoRA matrices).
     #? Used by build_muon_optimizer() and build_normuon_optimizer(). muon holds the settings that differ between the two.
     #! The weight matrices are the parameters of 2 or more dimensions outside the embeddings, so an output layer that is not tied to the embedding gets Muon too. The AdamW groups get no weight decay.
+    #! A matrix with "lora" in its name gets AdamW. Muon multiplies the update of a thin matrix (288 x 4) by sqrt(rows / columns). In Glint-2 this made large LoRA weights, and then x and the LoRA output grew each other until the loss became NaN.
     #! With the CUDA graph, each learning rate is a tensor on the device, so the scheduler can change it between graph replays.
     '''
-    
+
     # Split the parameters into the weight matrices, the embeddings, and the rest
     embedding_ids = {id(parameter) for module in model.modules() if isinstance(module, nn.Embedding) for parameter in module.parameters()}
-    parameters    = [parameter for parameter in model.parameters() if parameter.requires_grad]
-    matrices      = [parameter for parameter in parameters if parameter.ndim >= 2 and id(parameter) not in embedding_ids]
+    named         = [(name, parameter) for name, parameter in model.named_parameters() if parameter.requires_grad]
+    parameters    = [parameter for _, parameter in named]
+    matrices      = [parameter for name, parameter in named if parameter.ndim >= 2 and id(parameter) not in embedding_ids and "lora" not in name]
     embeddings    = [parameter for parameter in parameters if id(parameter) in embedding_ids]
-    others        = [parameter for parameter in parameters if parameter.ndim < 2 and id(parameter) not in embedding_ids]
-    
+    others        = [parameter for name, parameter in named if id(parameter) not in embedding_ids and (parameter.ndim < 2 or "lora" in name)]
+
     # Make the learning rate of each group, as a tensor on the device for the CUDA graph
     settings   = config.train.optimizer
     device     = parameters[0].device

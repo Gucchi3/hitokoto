@@ -31,7 +31,7 @@ class MuonAdamW(torch.optim.Optimizer):
     '''
     #* Hold one optimizer that updates the groups of kind "muon" with Muon (momentum, then the nearest orthogonal matrix of the update) and the groups of kind "adamw" with AdamW.
     #? Made by build_muon_optimizer() (the stable Muon of Keller Jordan) and build_normuon_optimizer() (the latest Muon of modded-nanogpt) in optimizer.py.
-    #! Muon is only for the weight matrices of hidden layers. Give the embeddings, an output layer, and the 1-D parameters (norm weights, biases) to the "adamw" groups.
+    #! Muon is only for the weight matrices of hidden layers. Give the embeddings, an output layer, LoRA matrices, and the 1-D parameters (norm weights, biases) to the "adamw" groups.
     #! step() reads no value on the CPU and counts the steps in tensors on the device, so it works inside a CUDA graph. lr can be a float or a tensor on the device that the scheduler changes.
     '''
     

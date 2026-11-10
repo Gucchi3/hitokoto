@@ -1,0 +1,2 @@
+from .yokoyama import Yokoyama
+

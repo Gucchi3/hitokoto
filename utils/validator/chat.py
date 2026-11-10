@@ -51,7 +51,8 @@ def chat_model(config: SimpleNamespace) -> None:
         if settings.style == "chat":
             prompt = history + [vocab["<user>"]] + tokenizer.encode(text).ids + [vocab["<bot>"]]
         else:
-            prompt = tokenizer.encode(text).ids
+            # prompt = tokenizer.encode(text).ids
+            prompt = [vocab["<eos>"]] + tokenizer.encode(text).ids
         answer = generate_tokens(model, prompt, device, config.data.max_length, settings.max_new_tokens, settings.temperature, settings.top_k, vocab.get("<eos>"))
         if settings.style == "chat":
             history = prompt + answer + [vocab["<eos>"]]
