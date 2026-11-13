@@ -1,5 +1,5 @@
-# @file test_hotaru.py
-# @brief Tests of model/hotaru/: the same first weights and outputs as TinyGpt of lab/tinylm_subbit, and causality
+# @file test_tiny_gpt.py
+# @brief Tests of model/tiny_gpt/: the same first weights and outputs as TinyGpt of lab/tinylm_subbit, and causality
 # @author Kohei Yamaguchi, Claude
 
 from pathlib import Path
@@ -9,7 +9,7 @@ import pytest
 import subprocess
 import torch
 
-from model.hotaru import Hotaru
+from model.tiny_gpt import TinyGpt
 
 # The folder of lab/tinylm_subbit (the reference), next to the folder that holds this project, or from TINYLM_SUBBIT
 PROJECT     = Path(__file__).resolve().parents[3]
@@ -33,27 +33,27 @@ def tinylm_reference(tmp_path_factory: pytest.TempPathFactory) -> dict:
     return torch.load(path, weights_only=True)
 
 
-def test_hotaru_first_weights_match_tinylm(tinylm_reference: dict) -> None:
+def test_tiny_gpt_first_weights_match_tinylm(tinylm_reference: dict) -> None:
     '''
-    #* With seed 0, Hotaru has the same weight names, in the same order, with the same first values as TinyGpt (ccca, float).
+    #* With seed 0, TinyGpt has the same weight names, in the same order, with the same first values as TinyGpt (ccca, float).
     '''
     
     torch.manual_seed(0)
-    weights = Hotaru().state_dict()
+    weights = TinyGpt().state_dict()
     first   = tinylm_reference["first"]
     assert list(weights) == list(first)
     assert all(torch.equal(weights[name], first[name]) for name in weights)
     return None
 
 
-def test_hotaru_outputs_match_tinylm(tinylm_reference: dict) -> None:
+def test_tiny_gpt_outputs_match_tinylm(tinylm_reference: dict) -> None:
     '''
-    #* With the random weights of TinyGpt loaded, Hotaru gives the same logits for a full window and a short one.
+    #* With the random weights of TinyGpt of tinylm_subbit loaded, TinyGpt gives the same logits for a full window and a short one.
     '''
     
     # Load the weights (every name must fit), and check that the norms are not at their first values (1 and 0)
     weights = tinylm_reference["weights"]
-    model   = Hotaru()
+    model   = TinyGpt()
     model.load_state_dict(weights, strict=True)
     assert not torch.allclose(weights["blocks.0.norm1.weight"], torch.ones(256))
     assert not torch.allclose(weights["norm.bias"], torch.zeros(256))
@@ -68,7 +68,7 @@ def test_hotaru_outputs_match_tinylm(tinylm_reference: dict) -> None:
     return None
 
 
-def test_hotaru_is_causal() -> None:
+def test_tiny_gpt_is_causal() -> None:
     '''
     #* Changing the token at one position changes the logits at that position and after it, but not before it (both the convolution and the attention blocks).
     #! The test checks positions near the start, inside the kernel of the convolution, and near the end, and that the change really reaches the later positions.
@@ -76,7 +76,7 @@ def test_hotaru_is_causal() -> None:
     
     # Random weights (the norms away from 1 and 0) and one window
     torch.manual_seed(3)
-    model = Hotaru().eval()
+    model = TinyGpt().eval()
     with torch.no_grad():
         for value in model.parameters():
             value.add_(torch.randn_like(value) * 0.05)

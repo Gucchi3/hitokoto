@@ -79,7 +79,7 @@ def main() -> None:
     parser.add_argument("--train"        , type=Path, required=True                             , help="text file for train.bin")
     parser.add_argument("--valid"        , type=Path, required=True                             , help="text file for validation.bin and test.bin")
     parser.add_argument("--data_dir"     , type=Path, default=Path("data/tinystories_byte")     , help="folder of the token files")
-    parser.add_argument("--tokenizer_dir", type=Path, default=Path("model/weight/hotaru_byte")  , help="folder of the byte tokenizer")
+    parser.add_argument("--tokenizer_dir", type=Path, default=Path("model/weight/tiny_gpt_byte"), help="folder of the byte tokenizer")
     
     # Check the files, and stop quietly on Ctrl+C, and always remove the caches
     try:

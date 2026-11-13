@@ -1,5 +1,5 @@
-# @file hotaru_block.py
-# @brief One block of Hotaru: a token mixer (gated short convolution or causal attention) and a GELU MLP, each after a LayerNorm
+# @file tiny_gpt_block.py
+# @brief One block of TinyGpt: a token mixer (gated short convolution or causal attention) and a GELU MLP, each after a LayerNorm
 # @author Kohei Yamaguchi, Claude
 
 from torch    import nn
@@ -17,10 +17,10 @@ INIT_STD    = 0.02
 
 
 
-class HotaruBlock(nn.Module):
+class TinyGptBlock(nn.Module):
     '''
-    #* Hold one block of Hotaru: x + proj(mix(qkv(LN(x)))), then x + out(GELU(fc(LN(x)))).
-    #? Made by Hotaru in hotaru.py. The same as GptBlock of lab/tinylm_subbit with float layers (setting None), so its weights load into this block by the same names.
+    #* Hold one block of TinyGpt: x + proj(mix(qkv(LN(x)))), then x + out(GELU(fc(LN(x)))).
+    #? Made by TinyGpt in tiny_gpt.py. The same as GptBlock of lab/tinylm_subbit with float layers (setting None), so its weights load into this block by the same names.
     #? The convolution mixer uses the three parts of qkv as B, C, and h: (q x v) goes through a causal depthwise convolution over time, and is then multiplied by k. So both mixers have the same linear layers.
     #! The linear layers have no biases. Their first weights are normal with std INIT_STD, made in the same order as in tinylm_subbit, so the same seed gives the same first weights.
     '''

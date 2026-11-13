@@ -53,7 +53,7 @@ def byte_window_evaluate(model: nn.Module, ids: torch.Tensor, count: int, contex
 def main() -> None:
     '''
     #* Read the command line and the config, load the model with the checkpoint, and show its bits per byte and accuracy on the fixed windows, in BF16 and in float32.
-    #! Run from the project folder, such as python -m tool.evaluate.byte_window --config config/hotaru.json --checkpoint log/<run>/best.pth.
+    #! Run from the project folder, such as python -m tool.evaluate.byte_window --config config/tiny_gpt.json --checkpoint log/<run>/best.pth.
     #! The token file is a .bin of uint16 token IDs, such as data/tinystories_byte/validation.bin (made by python -m tool.data.byte_text).
     '''
     
