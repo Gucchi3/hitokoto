@@ -46,3 +46,13 @@ def strategies_choice_questions(draw: st.DrawFn) -> list[tuple[str, list[str], i
         choices = draw(st.lists(text, min_size=2, max_size=4))
         questions.append((context, choices, draw(st.integers(0, len(choices) - 1))))
     return questions
+
+
+def strategies_byte_texts() -> st.SearchStrategy[str]:
+    '''
+    #* Return a strategy of texts for the byte tokenizer: any characters that UTF-8 can hold (1 to 4 bytes each, control characters, spaces at the ends), and the end mark of TinyStories.
+    #? Used by tests/tool/data/test_byte_text.py.
+    '''
+    
+    piece = st.one_of(st.text(st.characters(exclude_categories=("Cs",)), max_size=20), st.sampled_from(["<|endoftext|>", " ", "  ", "\n", "\r\n", "\t", "\x00", "日本語", "😀"]))
+    return st.lists(piece, max_size=8).map("".join)

@@ -22,10 +22,24 @@ python -m tool.data all --tinystories --fineweb_edu --finemath --tokenizer_dir .
 
 > [!WARNING]
 > 指定先の既存トークナイザは上書きされます。
+### TinyGpt 用のバイト単位データ（初回のみ）
+
+TinyGpt（`lab/tinylm_subbit` の ccca 構成）はバイト単位のモデルです（語彙 256、特殊トークンなし）。テキストファイルのバイトをそのままトークン ID にして、`data/tinystories_byte/` とトークナイザ `model/weight/tiny_gpt_byte/` を作ります。
+
+```powershell
+python -m tool.data.byte_text --train <TinyStoriesV2-GPT4-train の先頭 200 MB> --valid <TinyStoriesV2-GPT4-valid.txt>
+```
+
 ### 学習
 
 ```powershell
 python main.py --config .\config\hotaru.json
+```
+
+TinyGpt は `--config .\config\tiny_gpt.json` で学習します。学習のあと、`lab/tinylm_subbit` と同じ指標（valid の固定 1024 窓での次バイト正解率と bits/byte）を次のコマンドで測れます。
+
+```powershell
+python -m tool.evaluate.byte_window --config .\config\tiny_gpt.json --checkpoint .\log\<実行>\best.pth
 ```
 
 ## 使用可能なデータセット
@@ -43,6 +57,7 @@ python main.py --config .\config\hotaru.json
 - **[Supra Mini v6](https://huggingface.co/SupraLabs/Supra-Mini-v6-1M)**
 - **Yokoyama**
 - **Hotaru**
+- **TinyGpt**（`lab/tinylm_subbit` の ccca 構成、バイト単位）
 
 ## 測定可能なベンチマーク
 >[!NOTE]

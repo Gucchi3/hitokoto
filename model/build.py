@@ -20,12 +20,14 @@ from utils.exceptions import Error
 from .glint2          import Glint2
 from .hotaru          import Hotaru
 from .supra_mini_v6   import SupraMiniV6
+from .tiny_gpt        import TinyGpt
 from .yokoyama        import Yokoyama
 
 MODEL_REGISTRY: dict[str, type[nn.Module]] = {
     "glint2"       : Glint2,
     "hotaru"       : Hotaru,
     "supra_mini_v6": SupraMiniV6,
+    "tiny_gpt"     : TinyGpt,
     "yokoyama"     : Yokoyama,
 }
 
