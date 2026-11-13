@@ -22,10 +22,24 @@ python -m tool.data all --tinystories --fineweb_edu --finemath --tokenizer_dir .
 
 > [!WARNING]
 > 指定先の既存トークナイザは上書きされます。
+### Hotaru 用のバイト単位データ（初回のみ）
+
+Hotaru はバイト単位のモデルです（語彙 256、特殊トークンなし）。テキストファイルのバイトをそのままトークン ID にして、`data/tinystories_byte/` とトークナイザ `model/weight/hotaru_byte/` を作ります。
+
+```powershell
+python -m tool.data.byte_text --train <TinyStoriesV2-GPT4-train の先頭 200 MB> --valid <TinyStoriesV2-GPT4-valid.txt>
+```
+
 ### 学習
 
 ```powershell
 python main.py --config .\config\hotaru.json
+```
+
+学習のあと、`lab/tinylm_subbit` と同じ指標（valid の固定 1024 窓での次バイト正解率と bits/byte）を次のコマンドで測れます。
+
+```powershell
+python -m tool.evaluate.byte_window --config .\config\hotaru.json --checkpoint .\log\<実行>\best.pth
 ```
 
 ## 使用可能なデータセット

@@ -8,12 +8,12 @@
     "data": {
         "name"                 : "pretrain",
         "sources"              : [
-            {"root": "data/tinystories", "repeat": 1.0}
+            {"root": "data/tinystories_byte", "repeat": 1.0}
         ],
         "batch_size"           : 64,
-        "num_workers"          : 8,
+        "num_workers"          : 0,
         "max_length"           : 256,
-        "tokenizer_dir"        : "model/weight/hotaru",
+        "tokenizer_dir"        : "model/weight/hotaru_byte",
         "teacher_tokenizer_dir": null
     },
     "model": {
@@ -24,7 +24,7 @@
     },
     "train": {
         "method"            : "normal",
-        "steps"             : 30000,
+        "steps"             : 8000,
         "eval_interval"     : 1000,
         "accumulation_steps": 1,
         "max_grad_norm"     : 1.0,
@@ -36,15 +36,15 @@
         },
         "optimizer": {
             "name"              : "adamw",
-            "learning_rate"     : 0.0005,
+            "learning_rate"     : 0.002,
             "weight_decay"      : 0.01,
-            "betas"             : [0.9, 0.999],
+            "betas"             : [0.9, 0.95],
             "embedding_lr_scale": 1.0
         },
         "scheduler": {
             "name"                 : "cosine_annealing",
-            "warmup_steps"         : 500,
-            "minimum_learning_rate": 0.00001
+            "warmup_steps"         : 100,
+            "minimum_learning_rate": 0.0001
         },
         "distillation": {
             "temperature": 2.0,

@@ -4,6 +4,9 @@ data/
 ├── __main__.py
 │   ├── choose_corpora()
 │   └── main()
+├── byte_text.py
+│   ├── byte_text_convert()
+│   └── main()
 ├── corpus.py
 │   ├── split_corpus()
 │   ├── train_corpus_tokenizer()
